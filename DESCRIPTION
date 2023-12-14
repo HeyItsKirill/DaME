@@ -1,14 +1,17 @@
 Package: DaME
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Dabrowska Multivariate Estimator
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
-Encoding: UTF-8
-Imports: Rcpp (>= 1.0.11)
-LinkingTo: Rcpp
+Authors@R: 
+    c(person(given = "Kirill",
+           family = "Sabitov",
+           role = c("aut", "cre"),
+           email = "ksabitov@umich.edu"))
+Description: Computes the bivariate and trivariate Dabrowska estimator for survival data. Additionally, provides a function for simulating k-dimensional survival data from Clayton copula.
+LinkingTo: Rcpp, RcppArmadillo
+Imports: Rcpp, dplyr, prodlim
 NeedsCompilation: yes
+License: GPL (>= 3)
+Encoding: UTF-8
 Packaged: 2023-12-04 02:48:12 UTC; kiril
+RoxygenNote: 7.2.3
