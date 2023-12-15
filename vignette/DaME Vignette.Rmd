@@ -1,0 +1,170 @@
+---
+title: "615 Project"
+author: "Daniela Angulo, Kirill Sabitov, Shichen Yang"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+---
+
+```{r setup, include=T}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# Package Installation
+
+## DaME
+
+```{r}
+library(devtools)
+devtools::install_github("HeyItsKirill/DaME",force = TRUE)
+library("DaME")
+```
+
+## Benchmarking Package
+
+```{r}
+library("mhazard")
+```
+
+# Bivariate Case
+
+## Generating Data 
+
+```{r}
+df.biv <- DaME::genClaytonk(n=100,theta = 0.5,lambdaC = c(3.5,2.5))
+head(df.biv)
+dim(df.biv)
+```
+
+## Our Implementation
+
+```{r}
+
+ours.biv <- DaME::dabrowska(df.biv, k = 2)
+head(ours.biv)
+
+```
+
+
+## Mhazard's Implementation
+
+```{r}
+
+mhaz.biv <- mhazard::npSurv2(df.biv$X1,df.biv$X2,df.biv$Delta1,df.biv$Delta2)
+mhaz.biv$Fhat[1:5,1:2]
+
+```
+
+
+## Comparison
+
+```{r}
+
+comp.biv <- cbind(
+  ours.biv |> select("t1","t2","s.hat"),
+  as.data.frame(mhaz.biv$Fhat) |>
+    pivot_longer(cols = starts_with("V"),values_to = "s.hat.mh",) |> 
+    mutate(
+      name = gsub('^V', '', name),
+      name = as.numeric(name)
+    ) |>
+    arrange(name)|>
+    select(s.hat.mh))
+
+head(comp.biv, n = 15)
+
+```
+
+# Trivariate Case
+
+## Generating Data 
+
+```{r}
+df.tri <- DaME::genClaytonk(n=100,theta = 0.5,lambdaC = c(3.5,2.5,8))
+head(df.tri)
+dim(df.tri)
+```
+
+## Our Implementation
+
+```{r}
+
+ours.tri <- DaME::dabrowska(df.tri, k = 3)
+head(ours.tri)
+
+```
+
+
+## Mhazard's Implementation
+
+```{r}
+
+mhaz.tri <- mhazard::npSurv3(df.tri$X1,df.tri$X2,df.tri$X3,
+                             df.tri$Delta1,df.tri$Delta2,df.tri$Delta3)
+mhaz.tri$Fhat[,,1][1:5,1:2]
+
+```
+
+```{r}
+as.data.frame(mhaz.tri$Fhat) |>
+    pivot_longer(cols = starts_with("V"),values_to = "s.hat.mh",) |> 
+    mutate(
+      name = gsub('^V', '', name),
+      name = as.numeric(name)
+    ) |>
+    arrange(name)|>
+    select(s.hat.mh)
+```
+
+
+
+## Comparison
+
+```{r}
+
+comp.tri <- cbind(
+  ours.tri |> select("t1","t2","t3","s.hat"),
+  as.data.frame(mhaz.tri$Fhat) |>
+    pivot_longer(cols = starts_with("V"),values_to = "s.hat.mh",) |> 
+    mutate(
+      name = gsub('^V', '', name),
+      name = as.numeric(name)
+    ) |>
+    arrange(name)|>
+    select(s.hat.mh)
+  )
+
+head(comp.tri, n = 15)
+
+```
+
+
+## Mhazard Non-Functional Case
+
+```{r}
+load("~/DaME/data/benchmark.RData")
+head(data)
+```
+
+```{r}
+tryCatch({
+  mhaz.tri <- mhazard::npSurv3(data$t1,data$t2,data$t3,
+                               data$Delta1,data$Delta2,data$Delta3)
+},
+error =
+  function (e) {
+    cat(paste("Unable to estimate survival function\n\n", e))
+})
+```
+
+
+```{r}
+our.weird <- DaME::dabrowska(data, k = 3)
+our.weird |> select(t1,t2,t3,s.hat) |> head(n=15)
+```
+
+
